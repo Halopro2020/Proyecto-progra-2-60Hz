@@ -1,9 +1,7 @@
-# ventana_principal.py
-
 import customtkinter as ctk
 from tkinter import ttk
-from Clases.Nose import Biblioteca
-from Clases.Seno import Libro
+from Clases.Guardar_Ingredientes import Guardar_ingrediente
+from Clases.Ingredientes import Ingrediente
 import re
 from CTkMessagebox import CTkMessagebox
 from VENTANAS.Ventana_ingredientes import crear_panel_ingredientes
@@ -19,7 +17,7 @@ class AplicacionConPestanas(ctk.CTk):
         self.geometry("1200x700")
 
         # Inicializar la Biblioteca
-        self.biblioteca = Biblioteca()
+        self.guardar_ingrediente = Guardar_ingrediente()
 
         # Crear pestañas
         self.tabview = ctk.CTkTabview(self, width=600, height=500)
@@ -73,10 +71,10 @@ class AplicacionConPestanas(ctk.CTk):
             return
 
         # Crear una instancia de Libro
-        libro = Libro(nombre, int(cantidad))
+        ingrediente = Ingrediente(nombre, int(cantidad))
 
         # Agregar el libro a la biblioteca
-        if self.biblioteca.agregar_ingrediente(libro):
+        if self.guardar_ingrediente.agregar_ingrediente(ingrediente):
             self.actualizar_treeview()
         else:
             CTkMessagebox(title="Error", message="El ingrediente ya existe en la biblioteca.", icon="warning")
@@ -92,7 +90,7 @@ class AplicacionConPestanas(ctk.CTk):
         cantidad = item['values'][1]
 
         # Eliminar el libro de la biblioteca
-        if self.biblioteca.eliminar_ingrediente(nombre, cantidad):
+        if self.guardar_ingrediente.eliminar_ingrediente(nombre, cantidad):
             self.actualizar_treeview()
         else:
             CTkMessagebox(title="Error", message="El ingrediente no se pudo eliminar.", icon="warning")
@@ -103,6 +101,6 @@ class AplicacionConPestanas(ctk.CTk):
             self.tree.delete(item)
 
         # Agregar todos los libros de la biblioteca al Treeview
-        for libro in self.biblioteca.obtener_ingredientes():
-            self.tree.insert("", "end", values=(libro.nombre, libro.cantidad))
+        for ingrediente in self.biblioteca.obtener_ingredientes():
+            self.tree.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
 
