@@ -8,6 +8,9 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     frame_formulario = ctk.CTkFrame(tab)
     frame_formulario.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
+    frame_inferior = ctk.CTkFrame(tab)
+    frame_inferior.pack(side="bottom", fill="y", expand=False)
+
     frame_treeview = ctk.CTkFrame(tab)
     frame_treeview.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
@@ -24,10 +27,10 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     entry_cantidad.pack(pady=5)
     
     # Botón de ingreso
-    boton_ingresar = ctk.CTkButton(frame_formulario, text="Ingresar Libro", command=ingresar_libro_callback)
+    boton_ingresar = ctk.CTkButton(frame_formulario, text="Ingresar ingrediente", command=ingresar_libro_callback)
     boton_ingresar.pack(pady=10)
 
-    # Botón para eliminar libro arriba del Treeview
+    # Botón para eliminar ingrediente arriba del Treeview
     boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_libro_callback)
     boton_eliminar.pack(pady=10)
 
@@ -35,10 +38,10 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     tree = ttk.Treeview(frame_treeview, columns=("Nombre", "Cantidad"), show="headings")
     tree.heading("Nombre", text="Nombre")
     tree.heading("Cantidad", text="Cantidad")
-    tree.pack(expand=True, fill="both", padx=10, pady=10)
+    tree.pack(expand=False, fill="y", padx=10, pady=10)
 
     # Botón de menu
-    boton_generar_menu = ctk.CTkButton(frame_formulario, text="Generar Menu", command=ingresar_libro_callback)
-    boton_generar_menu.pack(pady=10)
+    boton_generar_menu = ctk.CTkButton(frame_inferior, text="Generar Menu", command=ingresar_libro_callback)
+    boton_generar_menu.pack(side="bottom", fill="y",expand=False)
     
     return entry_nombre, entry_cantidad, tree
