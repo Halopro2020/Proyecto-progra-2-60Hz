@@ -101,6 +101,6 @@ class AplicacionConPestanas(ctk.CTk):
             self.tree.delete(item)
 
         # Agregar todos los libros de la biblioteca al Treeview
-        for ingrediente in self.biblioteca.obtener_ingredientes():
+        for ingrediente in self.guardar_ingrediente.obtener_ingredientes():
             self.tree.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
 
