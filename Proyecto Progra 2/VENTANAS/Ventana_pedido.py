@@ -22,4 +22,7 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
     tree.heading("Cantidad", text="Cantidad")
     tree.heading("Precio Unitario", text="Precio Unitario")
     tree.pack(expand=True, fill="x", padx=10, pady=10)
-
+   
+    # Botón de ingreso deberia ir hasta abajo
+    boton_ingresar = ctk.CTkButton(frame_formulario2, text="Generar Menu", command=ingresar_pedido_callback, )
+    boton_ingresar.place(relx=0.5, rely=0.9, relwidth=0.9, relheight=0.05)
