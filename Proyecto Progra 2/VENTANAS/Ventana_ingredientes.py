@@ -1,10 +1,10 @@
 import customtkinter as ctk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
+from Clases import *
 import re
 
-def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callback):
-    # Dividir la pestaña en dos frames
+def crear_panel_ingredientes(tab, agregar_ingrediente_callback, eliminar_ingrediente_callback):
     frame_formulario = ctk.CTkFrame(tab)
     frame_formulario.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
