@@ -1,10 +1,33 @@
 import customtkinter as ctk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
-from Clases import *
 import re
 
-def crear_panel_ingredientes(tab, agregar_ingrediente_callback, eliminar_ingrediente_callback):
+# Diccionario global de ingredientes disponibles
+ingredientes_disponibles = {
+    'papas': 0,
+    'hamburguesa': 0,
+    'pan completo': 0,
+    'churrasco' : 0,
+    'lamina queso': 0,
+    'vienesa': 0,
+    'tomate': 0,
+    'palta': 0,
+    'bebida': 0
+}
+
+def actualizar_ingredientes(entry_nombre, entry_cantidad):
+    nombre = entry_nombre.get().strip().lower()  # Convertir a minúsculas para normalizar
+    cantidad = int(entry_cantidad.get().strip())  # Convertir la cantidad a entero
+    
+    # Actualizar el diccionario de ingredientes
+    if nombre in ingredientes_disponibles:
+        ingredientes_disponibles[nombre] += cantidad
+    else:
+        ingredientes_disponibles[nombre] = cantidad
+
+def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callback):
+    # Dividir la pestaña en tres frames
     frame_formulario = ctk.CTkFrame(tab)
     frame_formulario.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
@@ -20,14 +43,14 @@ def crear_panel_ingredientes(tab, agregar_ingrediente_callback, eliminar_ingredi
     entry_nombre = ctk.CTkEntry(frame_formulario)
     entry_nombre.pack(pady=5)
 
-    # Formulario en el segundo frame
     label_cantidad = ctk.CTkLabel(frame_formulario, text="Cantidad: ")
     label_cantidad.pack(pady=5)
     entry_cantidad = ctk.CTkEntry(frame_formulario)
     entry_cantidad.pack(pady=5)
     
-    # Botón de ingreso
-    boton_ingresar = ctk.CTkButton(frame_formulario, text="Ingresar ingrediente", command=ingresar_libro_callback)
+    # Botón de ingreso con actualización de ingredientes
+    boton_ingresar = ctk.CTkButton(frame_formulario, text="Ingresar ingrediente", 
+                                   command=lambda: [actualizar_ingredientes(entry_nombre, entry_cantidad), ingresar_libro_callback()])
     boton_ingresar.pack(pady=10)
 
     # Botón para eliminar ingrediente arriba del Treeview
@@ -40,8 +63,42 @@ def crear_panel_ingredientes(tab, agregar_ingrediente_callback, eliminar_ingredi
     tree.heading("Cantidad", text="Cantidad")
     tree.pack(expand=False, fill="y", padx=10, pady=10)
 
-    # Botón de menu
-    boton_generar_menu = ctk.CTkButton(frame_inferior, text="Generar Menu", command=ingresar_libro_callback)
-    boton_generar_menu.pack(side="bottom", fill="y",expand=False)
+    # Botón para generar menús en el frame inferior
+    boton_generar_menu = ctk.CTkButton(frame_inferior, text="Generar Menu", command=generar_menu)
+    boton_generar_menu.pack(side="bottom", fill="y", expand=False)
     
     return entry_nombre, entry_cantidad, tree
+
+# Función para generar menús basado en los ingredientes del stock
+def generar_menu():
+    # Recetas con los ingredientes y cantidades necesarias
+    recetas = {
+        'Papas Fritas': {'papas': 2},
+        'Hamburguesas': {'hamburguesa': 1, 'churrasco': 2, 'lamina queso': 1},
+        'Completos': {'vienesa': 1, 'pan completo': 1, 'tomate': 1, 'palta': 1},
+        'Pepsi': {'bebida': 1}
+    }
+
+    menus_generados, faltantes = [], []
+
+    # Obtener ingredientes disponibles (adaptar a la lógica de tu aplicación)
+    for receta, ingredientes in recetas.items():
+        suficientes = True
+
+        # Iterar sobre los ingredientes de la receta
+        for ing, cant_necesaria in ingredientes.items():
+            disponible = ingredientes_disponibles.get(ing, 0)
+            if disponible < cant_necesaria:
+                suficientes = False
+                break
+
+        if suficientes:
+            menus_generados.append(receta)
+        else:
+            faltantes.append(receta)
+
+    # Mostrar menús generados o faltantes
+    if menus_generados:
+        CTkMessagebox(title="Menús generados", message=", ".join(menus_generados), icon="check")
+    if faltantes:
+        CTkMessagebox(title="Faltan ingredientes", message=", ".join(faltantes), icon="warning")
