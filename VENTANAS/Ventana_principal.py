@@ -7,7 +7,7 @@ import re
 from CTkMessagebox import CTkMessagebox
 from VENTANAS.Ventana_ingredientes import crear_panel_ingredientes
 from VENTANAS.Ventana_pedido import crear_panel_pedido
-from VENTANAS.Ventana_pedido2 import crear_tarjeta, tarjeta_click
+from VENTANAS.Ventana_pedido2 import *
 #s
 class AplicacionConPestanas(ctk.CTk):
     def __init__(self):
