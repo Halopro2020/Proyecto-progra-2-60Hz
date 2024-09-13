@@ -35,7 +35,7 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
     canvas_superior.create_image(10, 120, anchor="nw", image=imagen_tk3)
     canvas_superior.create_image(90, 120, anchor="nw", image=imagen_tk4)
 
-    #De aca en adelante son los frames, trevieew, etc
+    #De aca en adelante son los frames, trevieew 
     frame_inferior = ctk.CTkFrame(tab)
     frame_inferior.pack(side="bottom", expand=False, anchor="center")
 
@@ -68,7 +68,7 @@ def crear_tarjeta(canvas, self, menu):
 
     # Crear la tarjeta con un tamaño fijo
     tarjeta = ctk.CTkFrame(canvas, corner_radius=10, border_width=1, border_color="#4CAF50", width=64, height=140, fg_color="transparent")
-    tarjeta.grid(row=fila, column=columna, padx=15, pady=15)
+    tarjeta.pack(side="left", padx=15, pady=5)
 
     # Hacer que la tarjeta sea completamente clickeable 
     tarjeta.bind("<Button-1>", lambda event: self.tarjeta_click(event, menu))
