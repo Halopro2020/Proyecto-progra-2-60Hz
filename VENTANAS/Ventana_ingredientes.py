@@ -7,23 +7,17 @@ from Clases.Guardar_Ingredientes import Guardar_ingrediente
 # Crear una instancia de Guardar_ingrediente
 gestor_ingredientes = Guardar_ingrediente()
 
-INGREDIENTES_VALIDOS = ['papas', 'bebida', 'hamburguesa', 'vienesa', 'pan completo', 'palta', 'tomate', 'lamina queso', 'churrasco']
-
 def actualizar_ingredientes(entry_nombre, entry_cantidad):
-    nombre = entry_nombre.get().strip().lower()  # Convertir a minúsculas para normalizar
-    cantidad = entry_cantidad.get().strip()  # Obtener la cantidad como cadena
+    nombre = entry_nombre.get().strip().lower()
+    cantidad = int(entry_cantidad.get().strip())
     
-    # Validar que el nombre sea un ingrediente válido
-    if nombre not in INGREDIENTES_VALIDOS:
-        CTkMessagebox(title="Error", message="El ingrediente ingresado no es válido.", icon="warning")
-        return  # Salir de la función para que no siga ejecutando
+    # Crear una instancia de Ingrediente y añadirla al gestor
+    nuevo_ingrediente = Ingrediente(nombre, cantidad)
+    gestor_ingredientes.agregar_ingrediente(nuevo_ingrediente)
+    
+    # Depuración
+    print("Ingredientes actuales:", gestor_ingredientes.obtener_ingredientes())
 
-    try:
-        cantidad = int(cantidad)  # Convertir la cantidad a entero
-    except ValueError:
-        CTkMessagebox(title="Error", message="La cantidad debe ser un número entero válido.", icon="warning")
-        return  # Salir de la función si la cantidad no es válida
-    
 
 def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callback):
     # Dividir la pestaña en tres frames
@@ -68,25 +62,20 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     
     return entry_nombre, entry_cantidad, tree
 
-# Función para generar menús basado en los ingredientes del stock
 def generar_menu():
-    # Recetas con los ingredientes y cantidades necesarias
     recetas = {
-        'Papas Fritas': {'papas': 2},
-        'Hamburguesas': {'hamburguesa': 1, 'churrasco': 2, 'lamina queso': 1},
-        'Completos': {'vienesa': 1, 'pan completo': 1, 'tomate': 1, 'palta': 1},
-        'Pepsi': {'bebida': 1}
+        'papas fritas': {'papas': 2},  
+        'hamburguesas': {'hamburguesa': 1, 'churrasco': 2, 'lamina queso': 1},
+        'completos': {'vienesa': 1, 'pan completo': 1, 'tomate': 1, 'palta': 1},
+        'pepsi': {'bebida': 1}
     }
 
     menus_generados, faltantes = [], []
 
-    # Obtener ingredientes disponibles desde el gestor de ingredientes
     ingredientes_disponibles = {ing.nombre: ing.cantidad for ing in gestor_ingredientes.obtener_ingredientes()}
 
     for receta, ingredientes in recetas.items():
         suficientes = True
-
-        # Iterar sobre los ingredientes de la receta
         for ing, cant_necesaria in ingredientes.items():
             disponible = ingredientes_disponibles.get(ing, 0)
             if disponible < cant_necesaria:
@@ -98,7 +87,6 @@ def generar_menu():
         else:
             faltantes.append(receta)
 
-    # Mostrar menús generados o faltantes
     if menus_generados:
         CTkMessagebox(title="Menús generados", message=", ".join(menus_generados), icon="check")
     if faltantes:
