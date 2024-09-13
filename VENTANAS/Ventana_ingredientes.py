@@ -7,13 +7,22 @@ from Clases.Guardar_Ingredientes import Guardar_ingrediente
 # Crear una instancia de Guardar_ingrediente
 gestor_ingredientes = Guardar_ingrediente()
 
+INGREDIENTES_VALIDOS = ['papas', 'bebida', 'hamburguesa', 'vienesa', 'pan completo', 'palta', 'tomate', 'lamina queso', 'churrasco']
+
 def actualizar_ingredientes(entry_nombre, entry_cantidad):
     nombre = entry_nombre.get().strip().lower()  # Convertir a minúsculas para normalizar
-    cantidad = int(entry_cantidad.get().strip())  # Convertir la cantidad a entero
+    cantidad = entry_cantidad.get().strip()  # Obtener la cantidad como cadena
     
-    # Crear una instancia de Ingrediente y añadirla al gestor
-    nuevo_ingrediente = Ingrediente(nombre, cantidad)
-    gestor_ingredientes.agregar_ingrediente(nuevo_ingrediente)  # Actualizar la lista de ingredientes
+    # Validar que el nombre sea un ingrediente válido
+    if nombre not in INGREDIENTES_VALIDOS:
+        CTkMessagebox(title="Error", message="El ingrediente ingresado no es válido.", icon="warning")
+        return  # Salir de la función para que no siga ejecutando
+
+    try:
+        cantidad = int(cantidad)  # Convertir la cantidad a entero
+    except ValueError:
+        CTkMessagebox(title="Error", message="La cantidad debe ser un número entero válido.", icon="warning")
+        return  # Salir de la función si la cantidad no es válida
     
 
 def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callback):

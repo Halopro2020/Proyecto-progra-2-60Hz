@@ -1,5 +1,6 @@
 from Clases import Ingredientes
 
+
 class Guardar_ingrediente:
     def __init__(self):
         self.lista_ingredientes = []
@@ -11,9 +12,9 @@ class Guardar_ingrediente:
                 # Si el ingrediente ya existe, actualizar la cantidad
                 lib.cantidad += ingrediente.cantidad
                 return True  # Cantidad actualizada
-        
+    
         # Si el ingrediente no existe, agregarlo a la lista
-        self.lista_ingredientes.append(ingrediente)
+        self.lista_ingredientes.append(ingrediente)  # Cambiado de lista_libros a lista_ingredientes
         return True  # ingrediente agregado como nuevo
 
     def eliminar_ingrediente(self, Nombre,  Cantidad):
@@ -29,4 +30,4 @@ class Guardar_ingrediente:
         return False
 
     def obtener_ingredientes(self):
-        return [ingrediente for ingrediente in self.lista_ingredientes]
+        return [libro for libro in self.lista_ingredientes]
