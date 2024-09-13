@@ -9,5 +9,5 @@ class Ingrediente:
         self.churrasco = churrasco
         self. tomate = tomate
         self.hamburguesa = hamburguesa
-        self.vienesa = vienesas
+        self.vienesa = vienesa
         self.cantidad = cantidad
