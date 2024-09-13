@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import datetime
 from tkinter import Canvas, ttk
 from PIL import Image, ImageTk
 from Clases.Menu import Menu
@@ -135,24 +136,72 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
         if len(tree.get_children()) == 0:
             CTkMessagebox(title="Advertencia", message="No hay menús en el pedido.", icon="warning")
         else:
+            # Crear un nuevo PDF
             pdf = FPDF()
             pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt="Boleta de Pedido", ln=True, align="C")
+        
+            # Encabezado principal
+            pdf.set_font("Arial", 'B', 16)  # Negrita, tamaño 16
+            pdf.cell(200, 10, txt="Boleta Restaurante Pro 60hz", ln=True, align="C")
             pdf.ln(10)
 
+            # Detalles del negocio (con un tamaño de fuente más adecuado)
+            pdf.set_font("Arial", size=12)  # Tamaño 12 es más legible
+            pdf.cell(200, 10, txt="Venta de completitos y otros", ln=True, align="L")
+            pdf.cell(200, 10, txt="RUT: 12345678-9", ln=True, align="L")
+            pdf.cell(200, 10, txt="Dirección: Edificio 8 oficina 217", ln=True, align="L")
+            pdf.cell(200, 10, txt="Teléfono: +56 9 1234 5678", ln=True, align="L")
+
+            # Agregar la fecha
+            from datetime import datetime
+            fecha_actual = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            pdf.cell(200, 10, txt=f"Fecha: {fecha_actual}", ln=True, align="R")
+            pdf.ln(10)
+
+            # Crear la tabla de productos
+            pdf.set_font("Arial", 'B', 10)  # Negrita para los encabezados de la tabla
+            pdf.cell(40, 10, txt="Nombre", border=1)
+            pdf.cell(30, 10, txt="Cantidad", border=1)
+            pdf.cell(50, 10, txt="Precio Unitario", border=1)
+            pdf.cell(50, 10, txt="Subtotal", border=1)
+            pdf.ln()
+
             total = 0
+            pdf.set_font("Arial", size=10)  # Tamaño normal para el contenido de la tabla
             for item in tree.get_children():
                 values = tree.item(item, "values")
                 nombre = values[0]
-                cantidad = values[1]
-                precio = values[2]
-                total += int(precio)
-                pdf.cell(200, 10, txt=f"{nombre} - {cantidad} - {precio} CLP", ln=True, align="L")
+                cantidad = int(values[1])
+                precio_unitario = int(values[2]) // cantidad
+                subtotal = int(values[2])
+
+                pdf.cell(40, 10, txt=nombre, border=1)
+                pdf.cell(30, 10, txt=str(cantidad), border=1)
+                pdf.cell(50, 10, txt=f"${precio_unitario}", border=1)
+                pdf.cell(50, 10, txt=f"${subtotal}", border=1)
+                pdf.ln()
+
+                total += subtotal
+
+            # Calcular el IVA y el total
+            iva = total * 0.19
+            total_con_iva = total + iva
 
             pdf.ln(10)
-            pdf.cell(200, 10, txt=f"Total: {total} CLP", ln=True, align="R")
+            pdf.set_font("Arial", 'B', 12)  # Negrita para el resumen de totales
+            pdf.cell(200, 10, txt=f"Subtotal: ${total}", ln=True, align="R")
+            pdf.cell(200, 10, txt=f"IVA (19%): ${int(iva)}", ln=True, align="R")
+            pdf.cell(200, 10, txt=f"Total: ${int(total_con_iva)}", ln=True, align="R")
+
+            # Mensaje final
+            pdf.ln(20)
+            pdf.set_font("Arial", size=10)
+            pdf.cell(200, 10, txt="Gracias por su compra. Para cualquier consulta, llámenos al +56 9 1234 5678", ln=True, align="C")
+            pdf.cell(200, 10, txt="Los productos adquiridos no tienen garantía.", ln=True, align="C")
+
+            # Guardar el PDF
             pdf.output("boleta_pedido.pdf")
+
             CTkMessagebox(title="Éxito", message="Boleta generada exitosamente.", icon="check")
 
     def mostrar_menus():
