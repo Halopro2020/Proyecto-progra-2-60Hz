@@ -72,20 +72,26 @@ def generar_menu():
 
     menus_generados, faltantes = [], []
 
+    # Obtener ingredientes disponibles
     ingredientes_disponibles = {ing.nombre: ing.cantidad for ing in gestor_ingredientes.obtener_ingredientes()}
+    
+    # Depuración: verificar si los ingredientes están bien almacenados
+    print("Stock actual:", ingredientes_disponibles)
 
     for receta, ingredientes in recetas.items():
         suficientes = True
+        faltantes_en_receta = []  # Para hacer seguimiento de los ingredientes faltantes en cada receta
+
         for ing, cant_necesaria in ingredientes.items():
             disponible = ingredientes_disponibles.get(ing, 0)
             if disponible < cant_necesaria:
                 suficientes = False
-                break
+                faltantes_en_receta.append(f"{ing} - Necesario: {cant_necesaria}, Disponible: {disponible}")
 
         if suficientes:
             menus_generados.append(receta)
         else:
-            faltantes.append(receta)
+            faltantes.append(f"{receta} (Faltantes: {', '.join(faltantes_en_receta)})")
 
     if menus_generados:
         CTkMessagebox(title="Menús generados", message=", ".join(menus_generados), icon="check")
