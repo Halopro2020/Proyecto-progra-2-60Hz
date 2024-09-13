@@ -2,13 +2,12 @@ import customtkinter as ctk
 from tkinter import ttk
 from Clases.Guardar_Ingredientes import Guardar_ingrediente
 from Clases.Ingredientes import Ingrediente
-from VENTANAS.Ventana_ingredientes import INGREDIENTES_VALIDOS
 import re
 from CTkMessagebox import CTkMessagebox
 from VENTANAS.Ventana_ingredientes import crear_panel_ingredientes
 from VENTANAS.Ventana_pedido import crear_panel_pedido
 from VENTANAS.Ventana_pedido2 import *
-#s
+
 class AplicacionConPestanas(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -43,50 +42,42 @@ class AplicacionConPestanas(ctk.CTk):
         crear_panel_pedido(
             self.tab2, self.ingresar_ingrediente, self.eliminar_ingrediente
         )
-        
-    '''Funciones de validación'''
-
-    def validar_campo_no_vacio(self, valor, campo):
-        if not valor.strip():
-            CTkMessagebox(title="Error de Validación", message=f"El campo '{campo}' no puede estar vacío.", icon="warning")
+    def validar_nombre(self, nombre):
+        if re.match(r"^[a-zA-Z\s]+$", nombre):
+            return True
+        else:
+            CTkMessagebox(title="Error de Validación", message="El nombre debe contener solo letras y espacios.", icon="warning")
             return False
-        return True
 
     def validar_cantidad(self, cantidad):
-        if not cantidad.isdigit():
-            CTkMessagebox(title="Error de Validación", message="La cantidad debe ser un número entero positivo.", icon="warning")
-            return False
-        return True
+        try:
+            valor = int(cantidad)
+            if valor >= 0:
+                return True
+            else:
+                CTkMessagebox(title="Error de Validación", message="Ingrese una cantidad valida, debe ser un número entero no negativo.", icon="warning")
+                return False
+        except ValueError:
+            CTkMessagebox(title="Error de Validación", message="Ingrese una cantidad valida, debe ser un número entero.", icon="warning")
 
     def ingresar_ingrediente(self):
-        
-        nombre = self.entry_nombre.get().strip().lower()  # Convertir a minúsculas para normalizar
+        nombre = self.entry_nombre.get()
         cantidad = self.entry_cantidad.get()
 
         # Validar entradas
-        if not self.validar_campo_no_vacio(nombre, "Nombre del Ingrediente"): return
-        if not self.validar_campo_no_vacio(cantidad, "Cantidad de Ingrediente"): return
+        if not self.validar_nombre(nombre):
+            return
+        elif not self.validar_cantidad(cantidad):
+            return
 
-        # Validar si el nombre está en la lista de ingredientes válidos
-        if nombre not in INGREDIENTES_VALIDOS:
-            CTkMessagebox(title="Error", message="El ingrediente ingresado no es válido.", icon="warning")
-            return  # Salir de la función si el ingrediente no es válido
+        # Crear una instancia de Libro
+        ingrediente = Ingrediente(nombre, int(cantidad))
 
-        # Validar cantidad
-        if not self.validar_cantidad(cantidad): return
-
-        # Crear una instancia de Ingrediente
-        ingrediente = Ingrediente(nombre, papas=0, bebida=0, hamburguesa=0, vienesa=0, cantidad=int(cantidad), pan_completo=0, palta=0, tomate=0, lamina_queso=0, churrasco=0)
-
-        # Agregar el ingrediente a la biblioteca
+        # Agregar el libro a la biblioteca
         if self.guardar_ingrediente.agregar_ingrediente(ingrediente):
             self.actualizar_treeview()
         else:
             CTkMessagebox(title="Error", message="El ingrediente ya existe en la biblioteca.", icon="warning")
-
-
-
-
 
     def eliminar_ingrediente(self):
         seleccion = self.tree.selection()
@@ -96,7 +87,7 @@ class AplicacionConPestanas(ctk.CTk):
 
         item = self.tree.item(seleccion)
         nombre = item['values'][0]
-        cantidad = item['values'][1]
+        cantidad = int(item['values'][1])
 
         # Eliminar el libro de la biblioteca
         if self.guardar_ingrediente.eliminar_ingrediente(nombre, cantidad):
@@ -112,4 +103,4 @@ class AplicacionConPestanas(ctk.CTk):
         # Agregar todos los libros de la biblioteca al Treeview
         for ingrediente in self.guardar_ingrediente.obtener_ingredientes():
             self.tree.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
-            
+
