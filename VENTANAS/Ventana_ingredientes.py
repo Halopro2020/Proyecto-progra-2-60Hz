@@ -117,3 +117,5 @@ def generar_menu():
         CTkMessagebox(title="Menús generados", message=", ".join(menus_generados), icon="check")
     if faltantes:
         CTkMessagebox(title="Faltan ingredientes", message=", ".join(faltantes), icon="warning")
+        
+        
