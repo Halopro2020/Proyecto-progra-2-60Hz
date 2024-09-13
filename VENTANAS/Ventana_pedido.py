@@ -5,13 +5,14 @@ from Clases.Menu import Menu
 from Clases.Ingredientes import Ingrediente
 from CTkMessagebox import CTkMessagebox
 from Clases.Guardar_Ingredientes import Guardar_ingrediente
+from VENTANAS.Ventana_ingredientes import gestor_ingredientes
 from fpdf import FPDF
 from Clases.Pedido import Pedido
 
 
 pedido = Pedido()
 # Instanciar el gestor de ingredientes
-gestor_ingredientes = Guardar_ingrediente()
+
 # Crear menú gestionando el stock y los pedidos
 menu = Menu(gestor_ingredientes.obtener_ingredientes(), [])
 # Función para verificar y descontar el stock basado en las recetas del menú seleccionado
@@ -23,13 +24,16 @@ def verificar_stock(nombre_menu):
         'pepsi': {'bebida': 1}
     }
 
-    ingredientes_necesarios = recetas.get(nombre_menu, {})
     ingredientes_actuales = gestor_ingredientes.obtener_ingredientes()
+    print("Ingredientes actuales en stock:", ingredientes_actuales)  # Verifica qué tipo de datos tienes aquí
+
+    ingredientes_necesarios = recetas.get(nombre_menu, {})
     
     # Convertir la lista de ingredientes en un diccionario para fácil acceso
     stock_actual = {ing.nombre: ing.cantidad for ing in ingredientes_actuales}
-    
-    print(f"Stock actual: {stock_actual}")  # Depuración
+    print(f"Stock actual: {stock_actual}")
+    print("Ingredientes actuales en stock:", gestor_ingredientes.obtener_ingredientes())
+
     
     for ingrediente, cantidad_necesaria in ingredientes_necesarios.items():
         if stock_actual.get(ingrediente, 0) < cantidad_necesaria:
