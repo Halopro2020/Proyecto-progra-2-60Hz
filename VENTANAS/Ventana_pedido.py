@@ -5,23 +5,46 @@ from Clases.Menu import Menu
 from Clases.Ingredientes import Ingrediente
 from CTkMessagebox import CTkMessagebox
 from Clases.Guardar_Ingredientes import Guardar_ingrediente
+from fpdf import FPDF
+from Clases.Pedido import Pedido
+
+
+pedido = Pedido()
 # Instanciar el gestor de ingredientes
 gestor_ingredientes = Guardar_ingrediente()
 
 # Crear menú gestionando el stock y los pedidos
 menu = Menu(gestor_ingredientes.obtener_ingredientes(), [])
+def verificar_stock(nombre_menu):
+    recetas = {
+        'Papas Fritas': {'papas': 2},
+        'Hamburguesas': {'hamburguesa': 1, 'churrasco': 2, 'lamina queso': 1},
+        'Completos': {'vienesa': 1, 'pan completo': 1, 'tomate': 1, 'palta': 1},
+        'Pepsi': {'bebida': 1}
+    }
 
-def verificar_stock(nombre_ingrediente):
-    ingredientes = gestor_ingredientes.obtener_ingredientes()
-    for ingrediente in ingredientes:
-        if ingrediente.nombre == nombre_ingrediente:
-            if ingrediente.cantidad > 0:
-                gestor_ingredientes.eliminar_ingrediente(nombre_ingrediente, 1)  # Descontar el stock
-                return True
-            else:
-                return False
-    return False
+    ingredientes_necesarios = recetas.get(nombre_menu, {})
+    ingredientes_actuales = gestor_ingredientes.obtener_ingredientes()
 
+    for ingrediente, cantidad_necesaria in ingredientes_necesarios.items():
+        if ingrediente not in ingredientes_actuales or ingredientes_actuales[ingrediente] < cantidad_necesaria:
+            print(f"No hay suficiente stock de {ingrediente} para {nombre_menu}.")
+            return False
+
+    for ingrediente, cantidad_necesaria in ingredientes_necesarios.items():
+        gestor_ingredientes.eliminar_ingrediente(ingrediente, cantidad_necesaria)
+
+    return True
+
+
+# Función para actualizar el total del pedido
+def actualizar_total(tree, label_total):
+    total = 0
+    for item in tree.get_children():
+        total += int(tree.item(item, "values")[2])  # Sumar el precio unitario de cada ítem
+    label_total.config(text=f"Total: {total} CLP")
+
+# Función para crear el panel del pedido
 def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
     # Crear canvas parte de arriba
     canvas_superior = Canvas(tab, bg="white", height=300)
@@ -36,106 +59,113 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
     # Guardar las referencias para que no se eliminen las imágenes
     canvas_superior.imagenes = [imagen_papas, imagen_cola, imagen_hotdog, imagen_hamburguesa]
 
-    # Lista de menús (puedes adaptarlo a tus datos)
     # Lista de menús (corrigiendo las imágenes)
     menus = [
         {"nombre": "Papas Fritas", "imagen": imagen_papas, "stock": "Papas Fritas"},
-        {"nombre": "Cola", "imagen": imagen_cola, "stock": "Cola"},
-        {"nombre": "Hotdog", "imagen": imagen_hotdog, "stock": "Hotdog"},  # Corregido
-        {"nombre": "Hamburguesa", "imagen": imagen_hamburguesa, "stock": "Hamburguesa"}  # Corregido
-    ]   
+        {"nombre": "Cola", "imagen": imagen_cola, "stock": "Pepsi"},  # Este debe coincidir con el nombre en recetas
+        {"nombre": "Hotdog", "imagen": imagen_hotdog, "stock": "Completos"},
+        {"nombre": "Hamburguesa", "imagen": imagen_hamburguesa, "stock": "Hamburguesas"}
+    ]
 
 
-    def agregar_a_pedido(menu_nombre, stock_item, tree):
-        if verificar_stock(stock_item):
+    def agregar_a_pedido(menu_nombre, stock_item, tree, label_total):
+        print(f"Intentando agregar {menu_nombre} al pedido.")
+        if verificar_stock(stock_item):  # Verificamos el stock correctamente con el stock_item
+            print(f"Stock suficiente para {menu_nombre}.")
             # Si hay suficiente stock, agregar el menú al pedido y actualizar el Treeview
-            menu.pedido.append(menu_nombre)  # Añadir el menú al pedido en la clase Menu
-        
-            # Definir los precios de los menús (puedes ajustar estos valores)
+            menu.pedido.append(menu_nombre)
+
+            # Definir los precios de los menús
             precios = {
                 'Papas Fritas': 1500,
                 'Cola': 1000,
                 'Hotdog': 2000,
                 'Hamburguesa': 2500
             }
-        
-            # Insertar en el Treeview (nombre del menú, cantidad=1, precio unitario)
+
+            print(f"Precio de {menu_nombre}: {precios[menu_nombre]}")
+
+            # Insertar en el Treeview
             tree.insert("", "end", values=(menu_nombre, 1, precios[menu_nombre]))
-        
+
+            # Actualizar el total
+            actualizar_total(tree, label_total)
+
             # Ejecutar la callback adicional al ingresar el pedido
             ingresar_pedido_callback()
         else:
-            # Si no hay suficiente stock, mostrar mensaje de advertencia
+            print(f"No hay suficiente stock para {menu_nombre}.")
             CTkMessagebox(title="Stock insuficiente", message=f"No hay suficiente stock para preparar {menu_nombre}.", icon="warning")
 
-    def cambiar_color_verde(event):
-        # Cambiar borde a verde al pasar el mouse
-        canvas_superior.itemconfig(event.widget.find_closest(event.x, event.y), outline="green")
+    # Crear función para eliminar un menú del pedido
+    def eliminar_menu(tree, label_total):
+        selected_item = tree.selection()
+        if selected_item:
+            menu_nombre = tree.item(selected_item, "values")[0]
 
-    def volver_color_rojo(event):
-        # Volver el borde a rojo al salir del área
-        canvas_superior.itemconfig(event.widget.find_closest(event.x, event.y), outline="red")
+            # Reponer stock
+            gestor_ingredientes.agregar_ingrediente(menu_nombre, 1)
 
-    # Crear función para dibujar rectángulos con esquinas redondeadas
-    def crear_rectangulo_redondeado(x1, y1, x2, y2, radio=15, **kwargs):
-        points = [
-            x1 + radio, y1,
-            x2 - radio, y1,
-            x2, y1, 
-            x2, y1 + radio,
-            x2, y2 - radio,
-            x2, y2, 
-            x2 - radio, y2,
-            x1 + radio, y2,
-            x1, y2, 
-            x1, y2 - radio,
-            x1, y1 + radio,
-            x1, y1
-        ]
-        return canvas_superior.create_polygon(points, smooth=True, **kwargs)
+            # Eliminar el ítem del Treeview
+            tree.delete(selected_item)
 
-    # Crear tarjetas de menús dentro del canvas
-    for i, menu in enumerate(menus):
-        x1, y1 = (i % 2) * 100 + 10, (i // 2) * 100 + 10
-        x2, y2 = x1 + 90, y1 + 90
+            # Actualizar el total
+            actualizar_total(tree, label_total)
 
-        # Crear borde rojo redondeado
-        rect = crear_rectangulo_redondeado(x1, y1, x2, y2, outline="red", width=5, fill="white")
+            eliminar_pedido_callback()
 
-        # Añadir imagen dentro del rectángulo
-        canvas_superior.create_image(x1 + 10, y1 + 10, anchor="nw", image=menu["imagen"])
+    # Crear el botón para generar la boleta
+    def generar_boleta(tree):
+        if len(tree.get_children()) == 0:
+            CTkMessagebox(title="Advertencia", message="No hay menús en el pedido.", icon="warning")
+        else:
+            # Generar el PDF de la boleta
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.cell(200, 10, txt="Boleta de Pedido", ln=True, align="C")
+            pdf.ln(10)
 
-        # Crear frame transparente para el nombre del menú
-        tarjeta_frame = ctk.CTkFrame(canvas_superior, corner_radius=10, fg_color="transparent")
-        canvas_superior.create_window(x1, y2 - 10, window=tarjeta_frame, width=50, height=20, anchor="nw")
+            total = 0
+            for item in tree.get_children():
+                values = tree.item(item, "values")
+                nombre = values[0]
+                cantidad = values[1]
+                precio = values[2]
+                total += int(precio)
+                pdf.cell(200, 10, txt=f"{nombre} - {cantidad} - {precio} CLP", ln=True, align="L")
 
-        # Mostrar nombre del menú en la tarjeta
-        nombre_label = ctk.CTkLabel(tarjeta_frame, text=menu["nombre"], font=("Arial", 10))
-        nombre_label.pack(side="top", padx=5, pady=5)
+            pdf.ln(10)
+            pdf.cell(200, 10, txt=f"Total: {total} CLP", ln=True, align="R")
+            pdf.output("boleta_pedido.pdf")
+            CTkMessagebox(title="Éxito", message="Boleta generada exitosamente.", icon="check")
 
-        # Asociar el clic en la tarjeta con la función de agregar al pedido
-        # Asociar el clic en la tarjeta con la función de agregar al pedido
-        # Asociar el clic en la tarjeta con la función de agregar al pedido
-        tarjeta_frame.bind("<Button-1>", lambda e, m=menu["nombre"], s=menu["stock"]: agregar_a_pedido(m, s, tree))
+    # Posicionar los menús en el canvas
+    def mostrar_menus():
+        for i, menu in enumerate(menus):
+            x1, y1 = (i % 2) * 150 + 20, (i // 2) * 150 + 20
+            x2, y2 = x1 + 100, y1 + 100
 
+            # Crear un rectángulo con bordes redondeados
+            rect = canvas_superior.create_rectangle(x1, y1, x2, y2, outline="black", width=2)
 
+            # Colocar imagen
+            img = canvas_superior.create_image((x1 + x2) // 2, y1 + 30, anchor="center", image=menu["imagen"])
 
-        # Asociar eventos de entrada y salida del mouse para cambiar color del borde
-        canvas_superior.tag_bind(rect, "<Enter>", cambiar_color_verde)
-        canvas_superior.tag_bind(rect, "<Leave>", volver_color_rojo)
+            # Colocar nombre del menú
+            canvas_superior.create_text((x1 + x2) // 2, y2 - 20, text=menu["nombre"], font=("Arial", 12))
 
-    # Frame inferior para botones adicionales
-    frame_inferior = ctk.CTkFrame(tab)
-    frame_inferior.pack(side="bottom", expand=False, anchor="center")
+            # Asociar la función de clic al rectángulo y a la imagen
+            canvas_superior.tag_bind(rect, "<Button-1>", lambda event, m=menu["nombre"], s=menu["stock"]: agregar_a_pedido(m, s, tree, label_total))
+            canvas_superior.tag_bind(img, "<Button-1>", lambda event, m=menu["nombre"], s=menu["stock"]: agregar_a_pedido(m, s, tree, label_total))
 
-    boton_generar_menu = ctk.CTkButton(frame_inferior, text="Generar Boleta", command=ingresar_pedido_callback)
-    boton_generar_menu.pack(side="bottom", fill="x", expand=False)
-
+    mostrar_menus()
+    # Frame para botones adicionales y Treeview
     frame_treeview2 = ctk.CTkFrame(tab)
     frame_treeview2.pack(side="top", fill="both", expand=True)
 
-    # Botón para eliminar menú arriba del Treeview
-    boton_eliminar = ctk.CTkButton(frame_treeview2, text="Eliminar Menu", fg_color="black", text_color="white", command=eliminar_pedido_callback)
+    # Botón para eliminar menú
+    boton_eliminar = ctk.CTkButton(frame_treeview2, text="Eliminar Menú", fg_color="black", text_color="white", command=lambda: eliminar_menu(tree, label_total))
     boton_eliminar.pack(pady=10)
 
     # Treeview en el segundo frame
@@ -144,5 +174,17 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
     tree.heading("Cantidad", text="Cantidad")
     tree.heading("Precio Unitario", text="Precio Unitario")
     tree.pack(expand=False, fill="both")
+
+    # Frame inferior para mostrar el total y generar boleta
+    frame_inferior = ctk.CTkFrame(tab)
+    frame_inferior.pack(side="bottom", expand=False, anchor="center")
+
+    # Label para mostrar el total
+    label_total = ctk.CTkLabel(frame_inferior, text="Total: 0 CLP", font=("Arial", 14))
+    label_total.pack(side="left", padx=10)
+
+    # Botón para generar boleta
+    boton_generar_boleta = ctk.CTkButton(frame_inferior, text="Generar Boleta", command=lambda: generar_boleta(tree))
+    boton_generar_boleta.pack(side="right", padx=10)
 
     return tree
