@@ -9,7 +9,6 @@ class Guardar_ingrediente:
                 return True
         self.lista_ingredientes.append(ingrediente)
         return True
-    
 
     def eliminar_ingrediente(self, nombre, cantidad):
         for ing in self.lista_ingredientes:
