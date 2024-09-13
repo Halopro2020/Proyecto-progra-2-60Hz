@@ -51,7 +51,8 @@ def actualizar_total(tree, label_total):
     total = 0
     for item in tree.get_children():
         total += int(tree.item(item, "values")[2])  # Sumar el precio unitario de cada ítem
-    label_total.config(text=f"Total: {total} CLP")
+    label_total.configure(text=f"Total: {total} CLP")
+
 
 # Función para crear el panel del pedido
 def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
@@ -80,10 +81,10 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
         print(f"Intentando agregar {menu_nombre} al pedido.")
         if verificar_stock(stock_item):  # Verificamos el stock con el stock_item correcto
             print(f"Stock suficiente para {menu_nombre}.")
-    
+
             # Agregar el menú al pedido
             pedido.agregar_menu(menu_nombre)
-    
+
             # Definir los precios de los menús
             precios = {
                 'Papas Fritas': 1500,
@@ -91,10 +92,19 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
                 'Hotdog': 2000,
                 'Hamburguesa': 2500
             }
-    
-            # Insertar en el Treeview
-            tree.insert("", "end", values=(menu_nombre, 1, precios[menu_nombre]))
-    
+
+            # Verificar si el menú ya está en el Treeview
+            for item in tree.get_children():
+                if tree.item(item, "values")[0] == menu_nombre:
+                    cantidad_actual = int(tree.item(item, "values")[1])
+                    nueva_cantidad = cantidad_actual + 1
+                    nuevo_precio = nueva_cantidad * precios[menu_nombre]
+                    tree.item(item, values=(menu_nombre, nueva_cantidad, nuevo_precio))
+                    break
+            else:
+                # Si no está, lo añadimos como nuevo
+                tree.insert("", "end", values=(menu_nombre, 1, precios[menu_nombre]))
+
             # Actualizar el total
             actualizar_total(tree, label_total)
 
@@ -103,6 +113,7 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
         else:
             print(f"No hay suficiente stock para {menu_nombre}.")
             CTkMessagebox(title="Stock insuficiente", message=f"No hay suficiente stock para preparar {menu_nombre}.", icon="warning")
+
 
     def eliminar_menu(tree, label_total):
         selected_item = tree.selection()
@@ -154,12 +165,18 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
             x1, y1 = (i % 2) * 150 + 20, (i // 2) * 150 + 20
             x2, y2 = x1 + 100, y1 + 100
 
-            rect = canvas_superior.create_rectangle(x1, y1, x2, y2, outline="black", width=2)
+            # Crear el rectángulo con líneas rojas y fondo transparente
+            rect = canvas_superior.create_rectangle(x1, y1, x2, y2, outline="red", width=2, fill="")
 
             img = canvas_superior.create_image((x1 + x2) // 2, y1 + 30, anchor="center", image=menu["imagen"])
 
             canvas_superior.create_text((x1 + x2) // 2, y2 - 20, text=menu["nombre"], font=("Arial", 12))
 
+            # Bind para cambiar el color de las líneas cuando el mouse entra
+            canvas_superior.tag_bind(rect, "<Enter>", lambda event, r=rect: canvas_superior.itemconfig(r, outline="green"))
+            canvas_superior.tag_bind(rect, "<Leave>", lambda event, r=rect: canvas_superior.itemconfig(r, outline="red"))
+
+            # Bind para agregar la funcionalidad de click en el rectángulo
             canvas_superior.tag_bind(rect, "<Button-1>", lambda event, m=menu["nombre"], s=menu["stock"]: agregar_a_pedido(m, s, tree, label_total))
             canvas_superior.tag_bind(img, "<Button-1>", lambda event, m=menu["nombre"], s=menu["stock"]: agregar_a_pedido(m, s, tree, label_total))
 
