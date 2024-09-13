@@ -5,7 +5,7 @@ from Clases.Menu import Menu
 from Clases.Ingredientes import Ingrediente
 from CTkMessagebox import CTkMessagebox
 from Clases.Guardar_Ingredientes import Guardar_ingrediente
-from VENTANAS.Ventana_ingredientes import gestor_ingredientes
+from VENTANAS.Ventana_ingredientes import gestor_ingredientes, actualizar_treeview
 from fpdf import FPDF
 from Clases.Pedido import Pedido
 
@@ -39,12 +39,15 @@ def verificar_stock(nombre_menu):
     
     return True
 
-# Función para actualizar el total del pedido
 def actualizar_total(tree, label_total):
     total = 0
     for item in tree.get_children():
-        total += int(tree.item(item, "values")[2])  # Sumar el precio unitario de cada ítem
+        try:
+            total += int(tree.item(item, "values")[2])  # Sumar el precio unitario de cada ítem
+        except ValueError:
+            print(f"Error al convertir {tree.item(item, 'values')[2]} a entero.")
     label_total.configure(text=f"Total: {total} CLP")
+
 
 
 # Función para crear el panel del pedido
@@ -101,12 +104,11 @@ def crear_panel_pedido(tab, ingresar_pedido_callback, eliminar_pedido_callback):
             # Actualizar el total
             actualizar_total(tree, label_total)
 
-            # Ejecutar la callback adicional al ingresar el pedido
-            ingresar_pedido_callback()
+            # Actualiza el Treeview en ventana_ingredientes.py para reflejar el nuevo stock
+            # actualizar_treeview(tree)  # Descomenta y ajusta si es necesario
         else:
             print(f"No hay suficiente stock para {menu_nombre}.")
             CTkMessagebox(title="Stock insuficiente", message=f"No hay suficiente stock para preparar {menu_nombre}.", icon="warning")
-
 
     def eliminar_menu(tree, label_total):
         selected_item = tree.selection()
