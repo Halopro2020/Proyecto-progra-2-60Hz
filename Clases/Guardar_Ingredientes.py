@@ -10,15 +10,16 @@ class Guardar_ingrediente:
         self.lista_ingredientes.append(ingrediente)
         return True
 
-    def eliminar_ingrediente(self, Nombre, Cantidad):
-        for lib in self.lista_ingredientes:
-            if lib.nombre == Nombre:
-                if lib.cantidad > int(Cantidad):
-                    lib.cantidad -= int(Cantidad)
+    def eliminar_ingrediente(self, nombre, cantidad):
+        for ing in self.lista_ingredientes:
+            if ing.nombre == nombre:
+                if ing.cantidad > cantidad:
+                    ing.cantidad -= cantidad
                 else:
-                    self.lista_ingredientes.remove(lib)
+                    self.lista_ingredientes.remove(ing)  # Elimina el ingrediente si la cantidad es igual o menor
                 return True
         return False
+
 
     # Este método ahora devuelve una lista de objetos Ingrediente
     def obtener_ingredientes(self):
