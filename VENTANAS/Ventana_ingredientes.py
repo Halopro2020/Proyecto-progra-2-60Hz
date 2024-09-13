@@ -47,7 +47,7 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     boton_ingresar.pack(pady=10)
 
     # Botón para eliminar ingrediente arriba del Treeview
-    boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_libro_callback)
+    boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=lambda: eliminar_ingrediente_seleccionado(tree))
     boton_eliminar.pack(pady=10)
 
     # Treeview en el segundo frame
@@ -61,6 +61,25 @@ def crear_panel_ingredientes(tab, ingresar_libro_callback, eliminar_libro_callba
     boton_generar_menu.pack(side="bottom", fill="y", expand=False)
     
     return entry_nombre, entry_cantidad, tree
+
+def eliminar_ingrediente_seleccionado(tree):
+    selected_item = tree.selection()
+    if selected_item:
+        nombre_ingrediente = tree.item(selected_item, "values")[0]
+        cantidad_ingrediente = int(tree.item(selected_item, "values")[1])  # Convertir a entero
+        gestor_ingredientes.eliminar_ingrediente(nombre_ingrediente, cantidad_ingrediente)  # Elimina del stock
+        tree.delete(selected_item)  # Elimina del Treeview
+
+        
+def actualizar_treeview(tree):
+    # Limpiar el Treeview
+    for item in tree.get_children():
+        tree.delete(item)
+    
+    # Añadir los ingredientes actualizados
+    for ing in gestor_ingredientes.obtener_ingredientes():
+        tree.insert("", "end", values=(ing.nombre, ing.cantidad))
+
 
 def generar_menu():
     recetas = {
