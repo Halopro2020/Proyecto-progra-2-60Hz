@@ -25,25 +25,18 @@ def verificar_stock(nombre_menu):
     }
 
     ingredientes_actuales = gestor_ingredientes.obtener_ingredientes()
-    print("Ingredientes actuales en stock:", ingredientes_actuales)  # Verifica qué tipo de datos tienes aquí
-
-    ingredientes_necesarios = recetas.get(nombre_menu, {})
-    
-    # Convertir la lista de ingredientes en un diccionario para fácil acceso
     stock_actual = {ing.nombre: ing.cantidad for ing in ingredientes_actuales}
-    print(f"Stock actual: {stock_actual}")
-    print("Ingredientes actuales en stock:", gestor_ingredientes.obtener_ingredientes())
-
+    
+    ingredientes_necesarios = recetas.get(nombre_menu, {})
     
     for ingrediente, cantidad_necesaria in ingredientes_necesarios.items():
         if stock_actual.get(ingrediente, 0) < cantidad_necesaria:
-            print(f"Faltante: {ingrediente} - Necesario: {cantidad_necesaria}, Disponible: {stock_actual.get(ingrediente, 0)}")
             return False
 
-    # Descontar los ingredientes del stock
+    # Descontar ingredientes del stock
     for ingrediente, cantidad_necesaria in ingredientes_necesarios.items():
         gestor_ingredientes.eliminar_ingrediente(ingrediente, cantidad_necesaria)
-
+    
     return True
 
 # Función para actualizar el total del pedido
