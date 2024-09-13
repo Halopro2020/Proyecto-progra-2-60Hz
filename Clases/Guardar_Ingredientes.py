@@ -1,33 +1,25 @@
-from Clases import Ingredientes
-
-
 class Guardar_ingrediente:
     def __init__(self):
         self.lista_ingredientes = []
 
     def agregar_ingrediente(self, ingrediente):
-        # Buscar si el ingrediente ya existe en la lista
-        for lib in self.lista_ingredientes:
-            if lib.nombre == ingrediente.nombre:
-                # Si el ingrediente ya existe, actualizar la cantidad
-                lib.cantidad += ingrediente.cantidad
-                return True  # Cantidad actualizada
-    
-        # Si el ingrediente no existe, agregarlo a la lista
-        self.lista_ingredientes.append(ingrediente)  # Cambiado de lista_libros a lista_ingredientes
-        return True  # ingrediente agregado como nuevo
+        for ing in self.lista_ingredientes:
+            if ing.nombre == ingrediente.nombre:
+                ing.cantidad += ingrediente.cantidad
+                return True
+        self.lista_ingredientes.append(ingrediente)
+        return True
 
-    def eliminar_ingrediente(self, Nombre,  Cantidad):
+    def eliminar_ingrediente(self, Nombre, Cantidad):
         for lib in self.lista_ingredientes:
             if lib.nombre == Nombre:
                 if lib.cantidad > int(Cantidad):
-                    # Reducir la cantidad en lugar de eliminar el ingrediente
                     lib.cantidad -= int(Cantidad)
                 else:
-                    # Si la cantidad es menor o igual, eliminar el ingrediente
                     self.lista_ingredientes.remove(lib)
                 return True
         return False
 
+    # Este método ahora devuelve una lista de objetos Ingrediente
     def obtener_ingredientes(self):
-        return [libro for libro in self.lista_ingredientes]
+        return self.lista_ingredientes
